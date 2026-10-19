@@ -1,0 +1,2 @@
+# Instalação
+Clone o repositório.
