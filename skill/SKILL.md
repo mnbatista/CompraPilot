@@ -1,92 +1,74 @@
 ---
 name: auditoria-compras
-description: Registra produtos de supermercado a partir de etiquetas, calcula preços normais ou promocionais, mantém o total estimado da compra e confere possíveis divergências com o valor informado pelo caixa ou com o comprovante.
+description: Interpreta etiquetas de supermercado, aplica preços normais ou promocionais, calcula itens e carrinhos e confere os valores esperados com os valores cobrados.
 compatibility: Requer Python 3. Não requer rede nem pacotes externos.
 metadata:
   author: Maycon Batista
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Auditoria de compras
 
-Use esta habilidade para registrar, calcular, finalizar e conferir uma compra de supermercado.
+Use esta habilidade para interpretar etiquetas, aplicar promoções, calcular compras e conferir comprovantes.
 
-## Arquivos da habilidade
-
-O script de cálculo está localizado em:
+O script está localizado em:
 
 `scripts/calcular_compra.py`
 
-Use esse script para:
+## Responsabilidades
 
-- calcular o preço aplicável e o subtotal de um item;
-- recalcular todos os itens e o total do carrinho;
-- comparar o total esperado com o valor cobrado.
+Esta habilidade deve:
 
-## Estados da compra
+- interpretar etiquetas de preços;
+- validar a quantidade comprada;
+- diferenciar embalagens de unidades internas;
+- aplicar preços normais ou promocionais;
+- calcular subtotais e o total do carrinho;
+- recalcular itens corrigidos ou removidos;
+- comparar o total esperado com o valor cobrado;
+- auxiliar na conferência do comprovante;
+- identificar possíveis divergências.
 
-Considere os seguintes estados:
+O agente controla o fluxo da conversa e o formato das respostas. Esta habilidade concentra as regras de interpretação, cálculo e conferência.
 
-- não iniciada;
-- em andamento;
-- finalizada;
-- em conferência.
+## Interpretação da etiqueta
 
-Mantenha os itens da compra na conversa atual até o usuário iniciar outra compra.
+Extraia somente informações legíveis:
 
-## Iniciar compra
-
-Quando o usuário disser "Iniciar compra" ou algo equivalente:
-
-1. Inicie uma compra vazia.
-2. Desconsidere itens e totais da compra anterior.
-3. Defina o estado como "em andamento".
-4. Responda:
-
-> Compra iniciada. Envie a foto da primeira etiqueta e informe a quantidade colocada no carrinho.
-
-Se o usuário enviar uma etiqueta antes de iniciar a compra, pergunte se deseja iniciar uma nova compra.
-
-## Interpretar etiqueta
-
-Ao receber uma fotografia de etiqueta, extraia somente as informações legíveis:
-
-- nome do produto;
+- nome e descrição do produto;
 - marca;
 - peso, volume ou conteúdo da embalagem;
-- código de barras;
+- código EAN ou código de barras;
 - preço normal ou de varejo;
 - preço promocional ou de atacado;
-- quantidade mínima exigida;
-- condições adicionais da promoção;
+- quantidade mínima da promoção;
+- condições adicionais;
 - validade da oferta, quando visível;
 - unidade de comercialização.
 
-Não invente dados ausentes ou ilegíveis.
+Não invente informações ausentes ou ilegíveis.
 
-Se algum dado necessário não estiver claro, informe exatamente qual dado precisa ser confirmado.
+Se produto ou preço não estiver claro, solicite somente a informação necessária ou uma nova fotografia.
 
 ## Quantidade obrigatória
 
 A quantidade comprada é obrigatória.
 
-O usuário pode informar a quantidade:
+A quantidade pode ser informada:
 
 - junto com a fotografia;
 - na mensagem imediatamente anterior;
 - na mensagem imediatamente posterior.
 
-Se a quantidade não tiver sido informada, pergunte apenas:
-
-> Quantas unidades desse produto você colocou no carrinho?
-
 Nunca presuma quantidade igual a 1.
 
-Não registre o item nem acrescente seu valor ao total enquanto a quantidade estiver ausente.
+Não registre nem calcule o item enquanto a quantidade estiver ausente.
 
-## Interpretação de quantidades
+Considere a quantidade informada como número de embalagens, salvo indicação explícita em contrário.
 
-Diferencie sempre:
+## Interpretação das quantidades
+
+Diferencie:
 
 - quantidade de embalagens compradas;
 - quantidade contida em cada embalagem;
@@ -94,44 +76,86 @@ Diferencie sempre:
 
 Exemplo:
 
-> Carga com 4 unidades, R$ 54,99 a partir de 3 unidades.
+`Carga com 4 unidades, R$ 54,99 a partir de 3 unidades.`
 
-Interprete como:
+Interpretação:
 
-- conteúdo de cada embalagem: 4 unidades;
-- quantidade mínima da promoção: 3 embalagens;
-- preço promocional por embalagem: R$ 54,99.
+- conteúdo da embalagem: 4 unidades;
+- quantidade mínima: 3 embalagens;
+- preço promocional: R$ 54,99 por embalagem.
 
-Não interprete as 4 unidades contidas na embalagem como quantidade comprada.
+Não interprete as unidades contidas na embalagem como quantidade comprada.
 
-## Aplicação de preço
+## Aplicação de promoções
 
 Aplique o preço promocional somente quando:
 
-- existir um preço promocional legível;
+- existir preço promocional legível;
 - a quantidade mínima estiver identificada;
 - a quantidade comprada atingir o mínimo;
-- as demais condições exigidas estiverem confirmadas.
+- as demais condições estiverem confirmadas.
 
 Caso contrário, aplique o preço normal.
 
-A expressão "a partir de 3 unidades" significa que o preço promocional se aplica a todas as quantidades iguais ou superiores a 3. Não exija múltiplos de 3.
+A expressão “a partir de 3 unidades” aplica-se a qualquer quantidade igual ou superior a 3. Não exija múltiplos de 3.
 
-Para condições envolvendo clube, CPF, aplicativo, cartão, forma de pagamento, cupom ou combinação de produtos, pergunte ao usuário se a condição foi atendida quando isso alterar o preço.
+Não presuma o cumprimento de condições envolvendo:
 
-## Uso do script Python
+- clube;
+- CPF;
+- aplicativo;
+- cartão;
+- cupom;
+- forma de pagamento;
+- combinação de produtos.
 
-Use `scripts/calcular_compra.py` para cálculos monetários.
+Quando uma condição alterar o preço, solicite confirmação ao usuário.
+
+## Promoções especiais
+
+Considere como promoção especial ofertas relacionadas a:
+
+- proximidade do vencimento;
+- liquidação;
+- etiqueta especial;
+- desconto excepcional;
+- condição temporária de validade.
+
+Registre internamente:
+
+`Promoção especial: preservar evidência para conferência.`
+
+Não recomende comprar mais apenas porque o preço unitário é menor.
+
+## Validação antes do cálculo
+
+Antes de calcular, confirme:
+
+- identificação do produto;
+- quantidade comprada;
+- pelo menos um preço aplicável.
+
+Se houver ambiguidade relevante, não calcule nem registre o item até obter a informação necessária.
+
+## Script de cálculo
+
+Use `scripts/calcular_compra.py` para todos os cálculos monetários.
 
 O script possui três operações:
 
-- `item`: calcula o preço aplicado e o subtotal de um produto;
-- `carrinho`: recalcula todos os itens e o total da compra;
-- `conferir`: compara o total esperado com o total cobrado.
+- `item`: calcula o preço aplicado e o subtotal;
+- `carrinho`: recalcula os itens e o total da compra;
+- `conferir`: compara o total esperado com o cobrado.
 
-### Dados para calcular um item
+Use a saída JSON do script como fonte dos resultados.
 
-Forneça ao script:
+Não substitua um cálculo executado com sucesso por um cálculo estimado em linguagem natural.
+
+## Operação item
+
+Use a operação `item` para registrar ou corrigir um produto.
+
+Forneça dados equivalentes a:
 
 ```json
 {
@@ -144,144 +168,250 @@ Forneça ao script:
 }
 ```
 
-Não inclua um campo quando a informação correspondente não existir na etiqueta.
+Não inclua campos cuja informação não seja conhecida.
 
-Use a saída JSON do script como fonte dos valores calculados. Não substitua um cálculo concluído com sucesso por cálculo estimado em linguagem natural.
+O cálculo é:
 
-## Registrar item
+`subtotal = quantidade × preço unitário aplicável`
 
-Antes de registrar um item, confirme que existem:
+A saída deve conter:
 
-- identificação do produto;
-- quantidade comprada;
-- preço aplicável.
+- produto;
+- quantidade;
+- preço aplicado;
+- subtotal;
+- regra aplicada.
 
-Após o cálculo, acrescente o item à compra atual e responda:
+## Operação carrinho
 
-```text
-Item registrado
+Use a operação `carrinho` após:
 
-Produto: [nome]
-Quantidade: [quantidade de embalagens]
-Preço unitário aplicado: R$ [valor]
-Regra aplicada: [preço normal ou condição promocional]
-Subtotal: R$ [valor]
-Total acumulado: R$ [valor]
+- inclusão de item;
+- correção de item;
+- remoção de item;
+- solicitação do carrinho;
+- finalização da compra.
+
+Forneça todos os itens ativos:
+
+```json
+{
+  "itens": [
+    {
+      "produto": "Arroz 5 kg",
+      "quantidade": 2,
+      "preco_normal": 29.90
+    }
+  ]
+}
 ```
 
-Se houver incerteza relevante, não registre o item até receber a correção.
+A saída deve conter:
 
-## Alterar o carrinho
-
-Aceite comandos como:
-
-- "Corrija a quantidade do arroz para 3."
-- "Remova o café."
-- "O preço correto é R$ 18,90."
-- "A promoção exige 4 unidades."
-- "Mostre o carrinho."
-
-Depois de qualquer alteração:
-
-1. atualize o item;
-2. recalcule o carrinho com o script;
-3. apresente o novo total acumulado.
-
-## Mostrar carrinho
-
-Quando o usuário pedir para mostrar o carrinho, apresente:
-
-| Produto | Quantidade | Preço aplicado | Regra | Subtotal |
-|---|---:|---:|---|---:|
-
-Depois da tabela, informe:
-
+- itens calculados;
 - quantidade de produtos diferentes;
 - total de unidades ou embalagens;
-- total estimado da compra.
+- total estimado;
+- moeda.
 
-## Finalizar compra
+Não inclua itens removidos.
 
-Quando o usuário disser "Finalizar compra":
+## Numeração dos itens
 
-1. Verifique se existe algum item aguardando quantidade ou confirmação.
-2. Se houver pendência, solicite somente a informação que estiver faltando.
-3. Recalcule todos os itens usando a operação `carrinho`.
-4. Defina o estado como "finalizada".
-5. Apresente o relatório final.
-6. Preserve os itens na conversa para possível conferência.
+Atribua um número sequencial permanente a cada produto registrado.
 
-O relatório deve conter:
+Mantenha o mesmo número durante toda a compra.
 
-| Item | Produto | Quantidade | Preço unitário | Regra aplicada | Subtotal |
-|---:|---|---:|---:|---|---:|
+Se um item for removido, não reutilize seu número.
 
-Apresente também:
+A numeração deve permitir comandos como:
 
-```text
-Produtos diferentes: [quantidade]
-Total de unidades: [quantidade]
-Total estimado: R$ [valor]
+- Mostrar item 3;
+- Corrigir item 2;
+- Remover item 4.
+
+## Correções e remoções
+
+Ao corrigir um item:
+
+1. altere somente os dados solicitados;
+2. execute novamente a operação `item`;
+3. recalcule o carrinho;
+4. preserve a numeração do item.
+
+Ao remover um item:
+
+1. exclua o item dos cálculos ativos;
+2. não reutilize seu número;
+3. recalcule o carrinho.
+
+## Operação conferir
+
+Use a operação `conferir` quando o usuário informar o total cobrado.
+
+Forneça:
+
+```json
+{
+  "total_esperado": 94.70,
+  "total_cobrado": 99.70
+}
 ```
 
-## Conferir valor do caixa
-
-Se o usuário informar o valor apresentado pelo caixa:
-
-1. Use a operação `conferir` do script.
-2. Compare o valor cobrado com o total estimado.
-3. Calcule a diferença como:
+Calcule:
 
 `diferença = total cobrado - total esperado`
 
-Classifique o resultado como:
+Classifique como:
 
 - valores iguais;
-- possível cobrança a mais;
-- possível cobrança a menos.
+- cobrado a mais;
+- cobrado a menos.
 
-Apresente:
+Não atribua a diferença a um produto específico sem informações individuais do comprovante.
+
+## Conferência do comprovante
+
+Extraia do comprovante:
+
+- descrição do produto;
+- quantidade;
+- preço unitário bruto;
+- subtotal bruto;
+- descontos;
+- acréscimos;
+- valor líquido;
+- total cobrado.
+
+Relacione as linhas aos produtos registrados usando, quando disponíveis:
+
+1. código de barras;
+2. descrição e marca;
+3. peso, volume ou conteúdo;
+4. quantidade;
+5. preço e subtotal.
+
+Considere abreviações comuns no comprovante.
+
+Não associe produtos apenas por semelhança vaga.
+
+## Descontos separados
+
+Um preço bruto maior não representa automaticamente uma divergência.
+
+Quando houver desconto separado:
+
+1. associe o desconto ao produto correto;
+2. calcule o valor líquido;
+3. compare o valor líquido com o esperado.
+
+Use:
+
+`valor líquido = valor bruto - descontos + acréscimos`
+
+Depois:
+
+`diferença = valor líquido - valor esperado`
+
+Exemplo:
 
 ```text
-Total esperado: R$ [valor]
-Total informado pelo caixa: R$ [valor]
-Diferença: R$ [valor]
-Resultado: [classificação]
+Esperado: 2 × R$ 3,92 = R$ 7,84
+Cobrado bruto: R$ 23,18
+Desconto: R$ 15,34
+Cobrado líquido: R$ 7,84
+Diferença: R$ 0,00
+Situação: Conferido
 ```
 
-## Conferir comprovante
-
-Se o usuário enviar uma fotografia do comprovante ou cupom:
-
-1. Extraia os produtos, quantidades, preços, descontos e total cobrado.
-2. Compare essas informações com os itens registrados.
-3. Considere abreviações comuns no comprovante.
-4. Não associe itens apenas por semelhança vaga.
-5. Apresente as possíveis divergências.
+## Classificação da conferência
 
 Classifique cada item como:
 
-- conferido;
-- possível divergência;
-- não localizado no comprovante;
-- item adicional no comprovante;
-- leitura inconclusiva.
+- `Conferido`: valor líquido igual ao esperado;
+- `Possível divergência`: diferença sustentada por dados legíveis;
+- `Não localizado`: produto registrado não encontrado;
+- `Item adicional`: produto cobrado não registrado;
+- `Leitura inconclusiva`: dados insuficientes ou ilegíveis.
 
-Apresente as divergências em uma tabela:
+Se a fotografia estiver cortada, desfocada ou incompleta, não conclua que houve erro.
 
-| Produto | Esperado | Cobrado | Diferença | Situação |
-|---|---:|---:|---:|---|
+Solicite somente uma nova imagem da parte necessária.
 
-Se o comprovante estiver cortado, desfocado ou ilegível, não conclua que houve erro. Solicite somente uma nova imagem da parte necessária.
+## Priorização das divergências
+
+Quando houver divergências, ordene por:
+
+1. maior valor cobrado a mais;
+2. promoção especial possivelmente não aplicada;
+3. quantidade incorreta;
+4. preço unitário incorreto;
+5. item adicional.
+
+Identifique a principal divergência usando:
+
+```text
+⚠️ Principal divergência
+
+Produto: [produto]
+Esperado: R$ [valor]
+Cobrado líquido: R$ [valor]
+Diferença: R$ [valor]
+Item: #[número]
+```
+
+## Consulta de etiqueta
+
+Preserve no contexto os dados extraídos de cada etiqueta e sua associação com o número do item.
+
+Quando o usuário consultar um item, disponibilize:
+
+- número;
+- produto;
+- quantidade;
+- preço registrado;
+- subtotal;
+- condição aplicada;
+- código de barras, quando disponível.
+
+A fotografia original só deve ser mencionada como exibida quando a interface realmente disponibilizar o anexo.
+
+Nunca afirme que apresentou a imagem se ela não estiver visível na resposta.
+
+## Insights de economia
+
+Forneça insights somente quando solicitado ou após a conferência.
+
+Diferencie:
+
+- redução do preço unitário;
+- economia líquida;
+- gasto adicional necessário;
+- quantidade adicional;
+- necessidade real do produto;
+- risco de desperdício;
+- validade do produto.
+
+Uma promoção não é necessariamente vantajosa quando exige gasto adicional.
+
+Exemplo:
+
+```text
+Comprar mais uma unidade reduz o preço unitário, mas aumenta o gasto total em R$ 6,00. A oferta só é vantajosa se a unidade adicional for necessária e consumida antes do vencimento.
+```
 
 ## Regras de confiabilidade
 
 - Não invente produto, preço, quantidade, código ou promoção.
 - Nunca presuma quantidade igual a 1.
-- Mostre claramente informações incertas.
-- Use o script para os cálculos monetários.
-- Não aplique promoção sem verificar suas condições.
+- Não confunda conteúdo da embalagem com quantidade comprada.
+- Não aplique promoção sem validar suas condições.
+- Não confunda preço bruto com valor líquido.
+- Não ignore descontos separados no comprovante.
+- Use o script para cálculos monetários.
+- Use duas casas decimais para valores monetários.
 - Use reais brasileiros no formato `R$ 0,00`.
-- Considere os cálculos como estimativas para conferência.
-- Não apresente o relatório como prova definitiva de cobrança indevida.
-- Mantenha todos os dados da compra na mesma conversa.
+- Mostre claramente informações incertas.
+- Considere os resultados como apoio à conferência.
+- Não apresente o resultado como prova definitiva de cobrança indevida.
+- Mantenha os dados somente na conversa atual.

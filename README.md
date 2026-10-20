@@ -18,7 +18,7 @@ O CompraPilot é um agente para Microsoft 365 Copilot Agent Builder que ajuda co
 
 ✅ Calcula subtotais e total acumulado
 
-✅ Mantém um carrinho virtual durante toda a compra
+✅ Mantém um carrinho virtual com modo compacto para compras extensas
 
 ✅ Gera relatório detalhado ao final
 
@@ -168,8 +168,9 @@ O agente:
 | Relatório final | ✅ |
 | Conferência de caixa | ✅ |
 | Conferência de cupom | ✅ |
-| Lista de compras | 🚧 |
-| Itens faltantes | 🚧 |
+| Lista de compras | ✅ |
+| Itens faltantes | ✅ |
+| Modo Caixa | ✅ |
 | Insights de economia | 🚧 |
 | Histórico de compras | 🔮 |
 
@@ -243,6 +244,30 @@ skill/
 - Validação de ofertas
 
 ---
+
+## ✅ Validação em Compras Reais
+
+O CompraPilot já foi validado em ambientes reais de:
+
+- Supermercado
+- Atacarejo
+
+Cenários testados:
+
+- Promoções por quantidade mínima
+- Produtos próximos ao vencimento
+- Correção de itens no carrinho
+- Remoção de produtos
+- Conferência de valor no caixa
+- Conferência de comprovantes
+- Controle de lista de compras
+
+### Principais aprendizados
+
+- Respostas compactas melhoram significativamente a experiência durante a compra.
+- O Modo Caixa facilita a localização rápida de possíveis divergências.
+- Produtos em promoção especial exigem atenção adicional na conferência.
+- A análise do comprovante complementa a conferência realizada no caixa.
 
 ## 🗺️ Roadmap
 
