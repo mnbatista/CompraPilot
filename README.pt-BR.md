@@ -1,10 +1,22 @@
 # 🛒 CompraPilot
 
-Seu copiloto inteligente para compras em supermercados.
-
-O CompraPilot é um agente para Microsoft 365 Copilot Agent Builder que ajuda consumidores a planejar compras, registrar produtos através de fotos de etiquetas, acompanhar gastos em tempo real, conferir preços e identificar oportunidades reais de economia.
+[English](README.md) | [Português do Brasil](README.pt-BR.md)
 
 ![Banner](assets/banner-github.png)
+
+## Você já se perguntou se o preço cobrado no caixa é o mesmo que estava na prateleira?
+
+O CompraPilot nasceu para responder uma pergunta simples:
+
+> "Será que estou pagando o mesmo preço que vi na prateleira?"
+
+Construído com Microsoft 365 Copilot Agent Builder, o CompraPilot ajuda consumidores a registrar preços de etiquetas, acompanhar compras em tempo real, conferir promoções, comparar valores cobrados e identificar possíveis divergências entre o preço esperado e o valor efetivamente cobrado.
+
+> Verificação de preços e comprovantes com IA.
+
+Diferente de uma simples lista de compras ou calculadora, o CompraPilot preserva o contexto de cada item registrado, incluindo quantidades, condições promocionais e evidências capturadas nas etiquetas das prateleiras.
+
+**Validado em cenários reais de compras em supermercados.**
 
 ---
 
