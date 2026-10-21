@@ -1,2 +1,0 @@
-# Arquitetura
-Usuário -> Agente -> Skill
